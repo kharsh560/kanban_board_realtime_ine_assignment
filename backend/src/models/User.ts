@@ -1,8 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import type {Optional} from "sequelize"
 import {sequelize} from "../config/config.ts";
-import jwt from "jsonwebtoken";
-
 
 interface UserAttributes {
   id: string;
@@ -24,31 +22,6 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public user_name!: string;
   public created_at!: Date;
   public updated_at!: Date;
-
-  // Instance method: Generate Access Token
-    public generateAccessToken(): string {
-        return jwt.sign(
-        {
-            id: this.id,
-            email: this.email,
-            user_name: this.user_name,
-        },
-        process.env.ACCESS_TOKEN_SECRET as string,
-        {expiresIn : "5m"}
-        );
-    }
-
-  // Instance method: Generate Refresh Token
-    public generateRefreshToken(): string {
-        return jwt.sign(
-        {
-            id: this.id,
-        },
-        process.env.REFRESH_TOKEN_SECRET as string,
-        {expiresIn : "7d"}
-        );
-    }
-
 }
 
 User.init(

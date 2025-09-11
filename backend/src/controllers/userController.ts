@@ -22,10 +22,12 @@ export const signIn = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const {user, accessToken, refreshToken} = await userService.signInUser(email, password);
     
-    res.cookie("accessToken", accessToken, { httpOnly: true, secure: true });
-    res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true });
+    res.cookie("accessToken", accessToken, { httpOnly: true, secure: true, sameSite: "strict", });
+    res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, sameSite: "strict", });
 
-    res.json({ message: "Signed in successfully", user });
+    // console.log("user = ", user);
+
+    res.json({ message: "Signed in successfully", user, accessToken });
   } catch (err: any) {
     res.status(401).json({ error: err.message });
   }
@@ -38,4 +40,25 @@ export const signOut = async (_req: Request, res: Response) => {
     .clearCookie("accessToken")
     .clearCookie("refreshToken")
     .json(result);
+};
+
+export const verifySession = async (req: Request, res: Response) => {
+    const user = req.user;
+    // console.log("user = ", user);
+    if (user) {
+        return res.status(200).json({
+            success: true,
+            user,
+        });
+    }
+
+    // console.log("Unauthorized request!");
+    return res
+    .status(200)
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
+    .json({
+      success: false,
+      message: "Unauthorized request!",
+    });
 };
