@@ -5,12 +5,16 @@ import { parse } from "url";
 import jwt from "jsonwebtoken"
 
 type decodedTokenPayload = {
-  id: string;
-  email: string;
-  user_name: string;
-  created_at: Date;
-  updated_at: Date;
-};
+    user: {
+        id: string;
+        email: string;
+        user_name: string;
+        created_at: string;
+        updated_at: string;
+    },
+    iat: number;
+    exp: number;
+}
 
 const clients = new Map<string, WebSocket>();
 // This is the map of clients connected through websockets.
@@ -25,10 +29,12 @@ const conversationRooms = new Map<string, Set<string>>();
 
 export function setupWebSocketServer(server: HTTPServer) {
 //   const wss = new WebSocketServer({ server, path: "/realTimeChat/ws" });
-console.log("Inside here: /realTimeKanban/ws")
+//NOTE console.log("Inside here: /realTimeKanban/ws");  Arrey, this will log at the server start itself.
   const wss = new WebSocketServer({ noServer: true, path: "/realTimeKanban/ws" });
     // let decoded : decodedTokenPayload;
+    console.log("Inside here: /realTimeKanban/ws");
     server.on("upgrade", (req, socket, head) => {
+        console.log("IUpgrading connection")
         const { query } = parse(req.url!, true); // Extract query params
         const token = query.token as string; // Get clientId from URL
         let decoded : decodedTokenPayload;
@@ -42,17 +48,20 @@ console.log("Inside here: /realTimeKanban/ws")
             }
             // console.log("decoded token: ", decoded);
         } catch (error) {
+            console.log("Authentication failed, destroying the wss connection.");
             socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
             socket.destroy();
             return;
         }
 
-        if (clients.has(decoded.id)) {
-            console.log("This client already exists!");
+        if (clients.has(decoded.user.id)) {
+            console.log("This client already exists, destroying the wss connection.");
             socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
             socket.destroy();
             return;
         }
+
+        console.log("Authentication passed, upgrading the connection.");
         
 
         // If authentication passes, upgrade the connection.
@@ -67,13 +76,14 @@ console.log("Inside here: /realTimeKanban/ws")
   wss.on("connection", (ws: WebSocket) => {
     // Now, use the decoded token from this connection instance.
     const decoded : decodedTokenPayload = (ws as any).decoded;
-    // const clientId = uuidv4();
-    const clientId = decoded.id;
+    const client = decoded.user;
+    const clientId = client.id;
+    const clientUserName = client.user_name;
     clients.set(clientId, ws);
 
-    console.log(`Client '${decoded.user_name}' connected with ID: ${clientId}. Total clients = ${clients.size}`);
+    console.log(`Client '${clientUserName}' connected with ID: ${clientId}. Total clients = ${clients.size}`);
 
-    ws.send(JSON.stringify({ system: "Welcome!", clientId, name: decoded.user_name }));
+    ws.send(JSON.stringify({ system: "Welcome!", clientId, name: clientUserName }));
 
     ws.on("close", () => {
       clients.delete(clientId);

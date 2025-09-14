@@ -20,6 +20,11 @@ sequelize.authenticate()
   .then(() => console.log("Database connected"))
   .catch((err) => console.error("DB connection failed:", err));
 
-app.listen(PORT, () => {
+// app.listen(PORT, () => {
+//   console.log(`🚀 Server running on http://localhost:${PORT}`);
+// });
+
+
+server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import BoardPage from "./boardPage";
+import { useConnectWebSocket } from "../hooks/webSocketConnectionLogic";
 
 export interface Card {
   id: string;
@@ -69,6 +70,14 @@ const Home: React.FC = () => {
     setSelectedBoard(updated);
   };
 
+  // Connect websocket:
+  const {connectWebSocket} = useConnectWebSocket();
+  useEffect(() => {
+    connectWebSocket();
+  }, []);
+
+  // Cleaning function to disconnect from web socket. -> can't make it here. Because WS should be connected in both the pages. Home and board.
+
   if (selectedBoard) {
     return (
       <BoardPage
@@ -81,7 +90,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6">
-      <h1 className="text-2xl font-bold mb-4">Your Boards</h1>
+      <h1 className="text-2xl font-bold mb-4">Your Boards:</h1>
       <div className="flex gap-2 mb-4">
         <input
           className="px-2 py-1 rounded bg-gray-800 border border-gray-700"

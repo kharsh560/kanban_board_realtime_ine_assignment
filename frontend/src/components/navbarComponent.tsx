@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useNotification } from "../utils/NotificationProvider";
 import { logout } from "../reduxStateManagementFiles/authSlice";
 import type { RootAuthState } from "../reduxStateManagementFiles/store";
+import { clearSocket } from "../reduxStateManagementFiles/WebSocketSlice";
 
 
 const Navbar: React.FC = () => {
@@ -13,6 +14,8 @@ const Navbar: React.FC = () => {
 
   const isLoggedIn = useSelector((state: RootAuthState) => state.auth.isLoggedIn);
   const userData = useSelector((state: RootAuthState) => state.auth.userData as { user_name?: string } | null);
+
+  const socket = useSelector((state : RootAuthState) => state.socket.socket);
 
   const signOut = async () => {
     try {
@@ -33,6 +36,15 @@ const Navbar: React.FC = () => {
       }
 
       await response.json();
+      if (socket) {
+          // socket.send(JSON.stringify({ userId, message: `Client: ${userId} is closing the socket connection!` }));
+          // const newActiveChat = activeChat;
+          // sendWsMessage(messageTypes.closingConnection, `Client: ${userName} has closed the socket connection!`, newActiveChat)
+          console.log("Closing the socket connection!");
+          (socket as WebSocket).close();
+          dispatch(clearSocket());
+          // dispatch(resetActiveChat());
+      }
       showNotification("success", "Signed out successfully!");
       dispatch(logout());
       navigate("/");

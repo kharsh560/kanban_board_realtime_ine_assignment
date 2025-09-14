@@ -13,7 +13,7 @@ function createToken(payload: any) {
 
 
 const webSocketInitializer = (req : Request, res : Response) => {
-    console.log("Inside webSocketInitializer!");
+    // console.log("Inside webSocketInitializer!");
     // Checking if there is user present in the "req"
     if (!req.user) {
       console.log("Auth failed before WebSocket connection.");
@@ -21,7 +21,7 @@ const webSocketInitializer = (req : Request, res : Response) => {
     }
     // Else generate a token for WS connection.
     const token = createToken({ user: req.user });
-    console.log("Authenticated! Use the token to connect.");
+    // console.log("Authenticated! Use the token to connect.");
     res.send({ message: "Authenticated! Use the token to connect.", token });
 }
 

@@ -32,15 +32,17 @@ export function useConnectWebSocket() {
     // NOTE: about line 33, 34: ❗️jsonwebtoken's verify() does not work in the browser! The jsonwebtoken library is Node.js-specific and depends on Node's crypto module, which is not available in browsers.
 
       // Step 2: Create WebSocket connection.
+      // console.log("Establishing websicket connection. Token is: ", authResJson.token);
       const socketUrl = `${import.meta.env.VITE_WS_URL}/realTimeKanban/ws?token=${authResJson.token}`;
+      // console.log("Making req to: ", socketUrl);
       const socket = new WebSocket(socketUrl);
 
       socket.onerror = (err) => {
-        console.error("WebSocket error:", err);
+        console.error("Closing socket due to WebSocket error:", err);
       };
+
       socket.onclose = () => {
         console.log("Closing socket!")
-        console.log("WebSocket closed");
         dispatch(setSocket(null));
       };
 
